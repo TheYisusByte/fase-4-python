@@ -1,66 +1,77 @@
+# -*- coding: utf-8 -*-
+"""
+logger.py - Gestión de eventos y errores de Software FJ.
 
-#logger.py
-#Aca encuentran la gestion de eventos y errores del sistema 
+Todo se guarda en logs/eventos.log (modo append: nunca borra lo anterior).
+Cada línea tiene: fecha y hora | nivel | módulo | mensaje.
+"""
 
 import logging
 from pathlib import Path
 
-
-#este es el directorio principal del proyecto
+# Carpeta principal del proyecto (proyect4/): este archivo está en
+# proyect4/src/utilidades/, así que subimos dos niveles con parents[2].
 BASE_DIR = Path(__file__).resolve().parents[2]
 
-#Aca se encuentra la carpeta donde se guardaran los registros
-CARPETA_LOGS = BASE_DIR / "logs"
-CARPETA_LOGS.mkdir(parents=True, exist_ok=True)
+# Rutas del registro, tal como las pide la guía.
+RUTA_LOGS = BASE_DIR / "logs"
+ARCHIVO_LOG = RUTA_LOGS / "eventos.log"
 
-#estos seran los archivos de registro
-ARCHIVO_LOG = CARPETA_LOGS / "software_fj.log"
-
-
-#esta sera la configuracion del logger
-logger = logging.getLogger("SoftwareFJ")
-logger.setLevel(logging.INFO)
-
-#esto servira para que evitemos agregar manejadores duplicados
-if not logger.handlers:
-
-    formato = logging.Formatter(
-        "%(asctime)s | %(levelname)s | %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S"
-    )
-
-    manejador = logging.FileHandler(
-        ARCHIVO_LOG,
-        encoding="utf-8"
-    )
-
-    manejador.setFormatter(formato)
-    logger.addHandler(manejador)
+NOMBRE_LOGGER = "SoftwareFJ"
 
 
+def obtener_logger():
+    """Devuelve el logger del proyecto, listo para usar.
+
+    - Crea la carpeta logs/ si no existe.
+    - Escribe en modo append.
+    - Evita manejadores duplicados (si se llama varias veces, no repite líneas).
+    """
+    RUTA_LOGS.mkdir(parents=True, exist_ok=True)
+
+    logger = logging.getLogger(NOMBRE_LOGGER)
+    logger.setLevel(logging.INFO)
+
+    if not logger.handlers:
+        formato = logging.Formatter(
+            "%(asctime)s | %(levelname)s | %(module)s | %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S",
+        )
+        manejador = logging.FileHandler(ARCHIVO_LOG, mode="a", encoding="utf-8")
+        manejador.setFormatter(formato)
+        logger.addHandler(manejador)
+
+    return logger
+
+
+def describir_error(error):
+    """Arma el texto de un error incluyendo su causa original (__cause__).
+
+    Ejemplo de salida:
+    ClienteInvalidoError: [FJ-101] Correo inválido <- causa: ValueError: formato incorrecto
+    """
+    texto = f"{type(error).__name__}: {error}"
+    causa = error.__cause__
+    while causa is not None:
+        texto += f" <- causa: {type(causa).__name__}: {causa}"
+        causa = causa.__cause__
+    return texto
+
+
+# Funciones de ayuda (las tuyas, conservadas). stacklevel=2 hace que el log
+# muestre el módulo que llamó a la función y no siempre "logger".
 def registrar_evento(mensaje):
     """Registra eventos importantes del sistema."""
-    logger.info(mensaje)
+    obtener_logger().info(mensaje, stacklevel=2)
 
 
 def registrar_error(mensaje, error=None):
-    """Registra errores y excepciones del sistema."""
-
+    """Registra un error; si se pasa la excepción, añade su cadena de causas."""
     if error is not None:
-        logger.error(
-            "%s | Detalle: %s",
-            mensaje,
-            str(error),
-            exc_info=(
-                type(error),
-                error,
-                error.__traceback__
-            )
-        )
-    else:
-        logger.error(mensaje)
+        mensaje = f"{mensaje} | {describir_error(error)}"
+    obtener_logger().error(mensaje, stacklevel=2)
 
 
 def registrar_advertencia(mensaje):
-    """Registra situaciones que requieren atencion."""
-    logger.warning(mensaje)
+    """Registra situaciones que requieren atención."""
+    obtener_logger().warning(mensaje, stacklevel=2)
