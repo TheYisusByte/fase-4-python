@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+# Módulo: utilidades/validadores.py
+# Responsable: Juan Daniel Granados Torres  |  Rama: feature/excepciones-utilidades
+# Lo usan: cliente.py y servicio.py para validar datos antes de crear objetos
 """
 Funciones reutilizables de validación para Software FJ.
 
