@@ -13,13 +13,19 @@ class AlquilerEquipo(Servicio):
     DURACION_MAXIMA = 30
 
     def __init__(self, identificador, nombre, tarifa_dia, deposito=0, disponible=True):
-        super().__init__(identificador, nombre, disponible)
+        # Se valida primero para no dejar un objeto a medio construir
         try:
-            self.__tarifa_dia = validar_numero_positivo(tarifa_dia, "tarifa por día")
+            tarifa = validar_numero_positivo(tarifa_dia, "tarifa por día")
             # El depósito puede ser 0, por eso permitir_cero=True
-            self.__deposito = validar_numero_positivo(deposito, "depósito", permitir_cero=True)
-        except ValueError as error:
+            deposito_validado = validar_numero_positivo(
+                deposito, "depósito", permitir_cero=True
+            )
+        except (ValueError, TypeError) as error:
             raise ServicioInvalidoError(f"Datos del equipo inválidos: {error}") from error
+
+        super().__init__(identificador, nombre, disponible)
+        self.__tarifa_dia = tarifa
+        self.__deposito = deposito_validado
 
     @property
     def tarifa_dia(self):
@@ -30,12 +36,18 @@ class AlquilerEquipo(Servicio):
         return self.__deposito
 
     def validar_parametros(self, duracion):
-        self._validar_rango_duracion(duracion, self.DURACION_MINIMA, self.DURACION_MAXIMA, "días")
+        # Los días deben ser un entero (bool es subclase de int, por eso se excluye)
+        if isinstance(duracion, bool) or not isinstance(duracion, int):
+            raise ServicioInvalidoError("La duración debe ser un número entero de días.")
+        self._validar_rango_duracion(
+            duracion, self.DURACION_MINIMA, self.DURACION_MAXIMA, "días"
+        )
 
     def _costo_base(self, duracion):
         # Costo base = tarifa por día x días + depósito
         return self.__tarifa_dia * duracion + self.__deposito
 
     def describir(self):
-        return (f"{super().describir()} - ${self.tarifa_dia:,.0f}/día, "
+        return (f"{super().describir()} - "
+                f"${self.tarifa_dia:,.0f}/día, "
                 f"depósito ${self.deposito:,.0f}")
