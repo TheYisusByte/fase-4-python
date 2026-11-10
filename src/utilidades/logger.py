@@ -1,4 +1,6 @@
-# -*- coding: utf-8 -*-
+# Módulo: utilidades/logger.py
+# Responsable: Juan Daniel Granados Torres  |  Rama: feature/excepciones-utilidades
+# Lo usan: gestor_fj.py y main.py para registrar eventos y errores en logs/eventos.log
 """
 logger.py - Gestión de eventos y errores de Software FJ.
 

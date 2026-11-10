@@ -1,2 +1,3 @@
-# -*- coding: utf-8 -*-
-# Archivo que convierte esta carpeta en un paquete de Python esto nos permite usar 'import'
+# Paquete utilidades: agrupa logger.py (registro de eventos y errores)
+# y validadores.py (validación de datos de entrada).
+# Responsable: Juan Daniel Granados Torres  |  Rama: feature/excepciones-utilidades
