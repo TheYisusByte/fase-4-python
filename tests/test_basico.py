@@ -81,9 +81,11 @@ class PruebasSoftwareFJ(unittest.TestCase):
     # Pruebas adicionales (casos de la simulación y de POO)
     # ------------------------------------------------------------------
     def test_cliente_sin_nombre(self):
-        # Dato AUSENTE (None) -> ParametroFaltanteError (convención de validadores.py)
-        with self.assertRaises(ParametroFaltanteError):
+        # Dato AUSENTE (None): el validador lanza ParametroFaltanteError y Cliente
+        # lo traduce a ClienteInvalidoError, conservando la causa original (raise ... from).
+        with self.assertRaises(ClienteInvalidoError) as contexto:
             Cliente("CLI-003", None, "ana@correo.com", "3001234567")
+        self.assertIsInstance(contexto.exception.__cause__, ParametroFaltanteError)
 
     def test_sala_con_capacidad_negativa(self):
         with self.assertRaises(ServicioInvalidoError):
