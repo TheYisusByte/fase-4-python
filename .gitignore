@@ -1,0 +1,18 @@
+# Python: archivos compilados y cachés
+__pycache__/
+*.py[cod]
+
+# Registro de eventos: se genera en cada ejecución, no se sube.
+# El .gitkeep se conserva para que la carpeta logs/ exista en el repositorio.
+logs/*
+!logs/.gitkeep
+
+# Entornos virtuales
+.venv/
+venv/
+
+# Editores y sistema operativo
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
